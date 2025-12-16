@@ -12,6 +12,8 @@ import { AuthPage } from "@/components/auth/AuthPage";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { Canvas, CanvasMode } from "@/components/shell/Canvas";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Plus, History, MessageSquare } from "lucide-react";
 
 // Demo Clock App
 const ClockApp = () => (
@@ -33,13 +35,27 @@ interface Process {
     cpu: number;
 }
 
+interface Session {
+    id: string;
+    title: string;
+    messages: Message[];
+    createdAt: number;
+}
+
 type ViewMode = "AUTH" | "ONBOARDING" | "SHELL";
 
 export default function Home() {
     // App State
     const [viewMode, setViewMode] = useState<ViewMode>("AUTH");
 
-    const [messages, setMessages] = useState<Message[]>([]);
+    // Chat Session State
+    const [sessions, setSessions] = useState<Session[]>([
+        { id: uuidv4(), title: "New Chat", messages: [], createdAt: Date.now() }
+    ]);
+    const [activeSessionId, setActiveSessionId] = useState<string>(sessions[0].id);
+
+    const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+    const messages = activeSession.messages;
     const [isThinking, setIsThinking] = useState(false);
 
     // Canvas/Deck State
@@ -75,7 +91,19 @@ export default function Home() {
             content,
             timestamp: Date.now(),
         };
-        setMessages((prev) => [...prev, userMsg]);
+
+        // Update Session State with User Message
+        setSessions(prev => prev.map(s => {
+            if (s.id === activeSessionId) {
+                return {
+                    ...s,
+                    messages: [...s.messages, userMsg],
+                    title: s.messages.length === 0 ? content.slice(0, 30) + (content.length > 30 ? "..." : "") : s.title
+                };
+            }
+            return s;
+        }));
+
         setIsThinking(true);
 
         // --- Intepret Intent (Mock) ---
@@ -132,7 +160,14 @@ export default function Home() {
                 content: aiContent,
                 timestamp: Date.now()
             };
-            setMessages(prev => [...prev, aiMsg]);
+
+            // Update Session State with AI Message
+            setSessions(prev => prev.map(s => {
+                if (s.id === activeSessionId) {
+                    return { ...s, messages: [...s.messages, aiMsg] };
+                }
+                return s;
+            }));
 
         }, 1500);
     };
@@ -159,6 +194,20 @@ export default function Home() {
         }
     }
 
+
+    const handleNewChat = () => {
+        const newSession: Session = {
+            id: uuidv4(),
+            title: "New Chat",
+            messages: [],
+            createdAt: Date.now()
+        };
+        setSessions(prev => [newSession, ...prev]);
+        setActiveSessionId(newSession.id);
+        setDeckMode("device"); // Reset deck? Optional.
+        setIsDeckOpen(false);
+    };
+
     return (
         <main className="flex h-screen w-full bg-zinc-50 dark:bg-zinc-950 overflow-hidden font-sans text-zinc-900 dark:text-zinc-100">
 
@@ -167,8 +216,42 @@ export default function Home() {
                 {/* Header */}
                 <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm z-10">
                     <div className="flex items-center gap-3">
+                        <Sheet>
+                            <SheetTrigger className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md transition-colors">
+                                <History className="w-4 h-4 text-zinc-500" />
+                            </SheetTrigger>
+                            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                                <SheetHeader>
+                                    <SheetTitle>Chat History</SheetTitle>
+                                </SheetHeader>
+                                <div className="mt-8 space-y-2">
+                                    {sessions.map(session => (
+                                        <div
+                                            key={session.id}
+                                            onClick={() => setActiveSessionId(session.id)}
+                                            className={cn(
+                                                "w-full text-left px-4 py-3 rounded-lg text-sm transition-colors cursor-pointer flex items-center gap-3",
+                                                activeSessionId === session.id
+                                                    ? "bg-zinc-100 dark:bg-zinc-900 font-medium"
+                                                    : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-500"
+                                            )}
+                                        >
+                                            <MessageSquare className="w-4 h-4 opacity-70" />
+                                            <span className="truncate">{session.title}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </SheetContent>
+                        </Sheet>
                         <div className="w-3 h-3 rounded-full bg-zinc-900 dark:bg-zinc-100 shadow-sm" />
                         <span className="font-semibold tracking-tight text-sm">Pamir OS // Shell</span>
+                        <button
+                            onClick={handleNewChat}
+                            className="ml-2 p-1.5 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                            title="New Chat"
+                        >
+                            <Plus className="w-4 h-4" />
+                        </button>
                     </div>
                     <div className="flex items-center gap-4">
                         <button

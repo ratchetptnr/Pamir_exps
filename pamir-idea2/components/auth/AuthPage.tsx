@@ -26,11 +26,7 @@ export function AuthPage({ onLogin, onSetup }: AuthPageProps) {
         // Mock Auth Latency
         setTimeout(() => {
             setIsLoading(false);
-            if (password.length > 0) {
-                onLogin();
-            } else {
-                toast.error("Invalid Credentials", { description: "Please enter a password." });
-            }
+            onLogin();
         }, 1500);
     };
 
