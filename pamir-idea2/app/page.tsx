@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChatInput } from "@/components/shell/ChatInput";
 import { LogOut } from "lucide-react";
 import { Message, MessageList } from "@/components/shell/MessageList";
+import { ActionData } from "@/components/shell/ActionBlock";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
@@ -114,10 +115,25 @@ export default function Home() {
         setTimeout(() => {
             setIsThinking(false);
 
+            setIsThinking(false);
+
             let aiContent = "";
+            const actions: ActionData[] = [];
 
             if (isClock) {
                 aiContent = "I've written a basic digital clock script for the e-ink display. I'm pushing it to the emulator now.";
+
+                actions.push({
+                    type: "thinking",
+                    content: "Analyzing request...\nGenerating React component for Digital Clock...\nChecking display compatibility..."
+                });
+
+                actions.push({
+                    type: "terminal",
+                    title: "Deploying to Emulator",
+                    content: "npm run deploy --target=device-01 --component=ClockApp\n> Compiling...\n> Uploading assets...\n> Success."
+                });
+
                 // Trigger Device Mode
                 setTimeout(() => {
                     setDeckMode("device");
@@ -127,6 +143,18 @@ export default function Home() {
 
             } else if (isMonitor) {
                 aiContent = "I've started the system monitoring daemon. You can view the dashboard in the web preview.";
+
+                actions.push({
+                    type: "thinking",
+                    content: "Checking system resources...\nIdentifying available monitoring scripts...\nFound 'monitor.py' in /scripts..."
+                });
+
+                actions.push({
+                    type: "terminal",
+                    title: "Starting Background Process",
+                    content: "$ python3 scripts/monitor.py --daemon\n[INFO] Starting Monitor Daemon (PID 8821)\n[INFO] Listening on port 3000..."
+                });
+
                 // Trigger Web Mode
                 setTimeout(() => {
                     setDeckMode("web");
@@ -141,6 +169,11 @@ export default function Home() {
 
             } else {
                 aiContent = "I can help with that. I'm analyzing your request.";
+
+                actions.push({
+                    type: "thinking",
+                    content: "Processing natural language query...\nSearching context...\nFormulating response..."
+                });
 
                 // Demo: If discussing system/files, open Deck
                 if (content.toLowerCase().includes("system") || content.toLowerCase().includes("process")) {
@@ -158,7 +191,8 @@ export default function Home() {
                 id: uuidv4(),
                 role: "assistant",
                 content: aiContent,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                actions: actions
             };
 
             // Update Session State with AI Message

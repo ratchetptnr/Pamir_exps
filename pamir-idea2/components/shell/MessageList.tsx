@@ -4,7 +4,10 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
+
 import { ActionBlock, ActionData } from "@/components/shell/ActionBlock";
+import { StreamingText } from "@/components/shell/StreamingText";
+import { AiMessage } from "@/components/shell/AiMessage";
 
 export type Message = {
     id: string;
@@ -60,17 +63,14 @@ export function MessageList({ messages, isThinking }: MessageListProps) {
                             >
                                 {/* Text Content */}
                                 {message.content && (
-                                    <div className="whitespace-pre-wrap">{message.content}</div>
+                                    message.role === "assistant" ? (
+                                        <AiMessage message={message} />
+                                    ) : (
+                                        <div className="whitespace-pre-wrap">{message.content}</div>
+                                    )
                                 )}
 
-                                {/* System Actions (Only for AI) */}
-                                {message.actions && message.actions.length > 0 && (
-                                    <div className="mt-4 space-y-2">
-                                        {message.actions.map((action, idx) => (
-                                            <ActionBlock key={idx} data={action} />
-                                        ))}
-                                    </div>
-                                )}
+
                             </div>
 
                             {message.role === "user" && (

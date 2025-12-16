@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ChevronRight, Terminal, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { StreamingText } from "@/components/shell/StreamingText";
 
 export type ActionType = "thinking" | "terminal" | "approval" | "done";
 
@@ -19,10 +20,21 @@ interface ActionBlockProps {
     data: ActionData;
     onApprove?: (always: boolean) => void;
     onDeny?: () => void;
+    stream?: boolean;
+    onStreamComplete?: () => void;
 }
 
-export function ActionBlock({ data, onApprove, onDeny }: ActionBlockProps) {
+export function ActionBlock({ data, onApprove, onDeny, stream = false, onStreamComplete }: ActionBlockProps) {
+    // If not streaming (e.g. history), show full content. 
+    // If streaming, ensure it's expanded initially to show the stream.
     const [isCollapsed, setIsCollapsed] = React.useState(data.isCollapsed ?? false);
+
+    // If we are streaming, we want to auto-expand to show the content.
+    React.useEffect(() => {
+        if (stream) {
+            setIsCollapsed(false);
+        }
+    }, [stream]);
 
     if (data.type === "thinking") {
         return (
@@ -48,7 +60,11 @@ export function ActionBlock({ data, onApprove, onDeny }: ActionBlockProps) {
                             className="overflow-hidden"
                         >
                             <div className="mt-2 text-sm text-muted-foreground font-mono bg-muted/30 p-3 rounded-md whitespace-pre-wrap">
-                                {data.content}
+                                {stream ? (
+                                    <StreamingText content={data.content} speed={10} onComplete={onStreamComplete} />
+                                ) : (
+                                    data.content
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -65,8 +81,11 @@ export function ActionBlock({ data, onApprove, onDeny }: ActionBlockProps) {
                     <span className="text-xs font-mono text-zinc-400">{data.title || "Terminal"}</span>
                 </div>
                 <div className="p-4 font-mono text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto">
-                    {data.content}
-                    <span className="inline-block w-2 h-4 ml-1 align-middle bg-zinc-500 animate-pulse" />
+                    {stream ? (
+                        <StreamingText content={data.content} speed={5} onComplete={onStreamComplete} />
+                    ) : (
+                        data.content
+                    )}
                 </div>
             </div>
         );
