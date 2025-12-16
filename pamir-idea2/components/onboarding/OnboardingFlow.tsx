@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { Wifi, Smartphone, ArrowRight, Check, RefreshCw, Radio, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +14,10 @@ type OnboardingStep = "WELCOME" | "CONNECT_AP" | "WIFI_CONFIG" | "PROVISIONING" 
 
 interface OnboardingFlowProps {
     onComplete: () => void;
+    onBack?: () => void;
 }
 
-export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+export function OnboardingFlow({ onComplete, onBack }: OnboardingFlowProps) {
     const [step, setStep] = useState<OnboardingStep>("WELCOME");
     const [wifiSSID, setWifiSSID] = useState("");
     const [wifiPassword, setWifiPassword] = useState("");
@@ -61,8 +63,15 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                             className="text-center space-y-6"
                         >
-                            <div className="w-20 h-20 bg-zinc-900 dark:bg-zinc-100 rounded-2xl mx-auto shadow-xl flex items-center justify-center">
-                                <span className="text-4xl">🏔️</span>
+                            <div className="w-20 h-20 bg-zinc-900 dark:bg-zinc-100 rounded-2xl mx-auto shadow-xl flex items-center justify-center overflow-hidden">
+                                <Image
+                                    src="/PamirAI.png"
+                                    alt="Pamir OS Logo"
+                                    width={80}
+                                    height={80}
+                                    className="object-cover"
+                                    priority
+                                />
                             </div>
                             <div className="space-y-2">
                                 <h1 className="text-2xl font-bold tracking-tight">Welcome to Pamir OS</h1>
@@ -74,6 +83,11 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                             <Button size="lg" className="w-full" onClick={() => setStep("CONNECT_AP")}>
                                 Set Up New Device <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
+                            {onBack && (
+                                <Button variant="ghost" className="w-full text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300" onClick={onBack}>
+                                    Back to Login
+                                </Button>
+                            )}
                         </motion.div>
                     )}
 

@@ -44,7 +44,7 @@ export function AuthPage({ onLogin, onSetup }: AuthPageProps) {
             >
                 {/* Branding */}
                 <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="relative w-24 h-24 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl flex items-center justify-center overflow-hidden">
+                    <div className="relative w-24 h-24 bg-white dark:bg-zinc-900 rounded-2xl flex items-center justify-center overflow-hidden">
                         <Image
                             src="/PamirAI.png"
                             alt="Pamir AI Logo"

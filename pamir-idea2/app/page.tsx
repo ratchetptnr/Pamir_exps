@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChatInput } from "@/components/shell/ChatInput";
+import { LogOut } from "lucide-react";
 import { Message, MessageList } from "@/components/shell/MessageList";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
@@ -63,7 +64,7 @@ export default function Home() {
     }
 
     if (viewMode === "ONBOARDING") {
-        return <OnboardingFlow onComplete={() => setViewMode("SHELL")} />;
+        return <OnboardingFlow onComplete={() => setViewMode("SHELL")} onBack={() => setViewMode("AUTH")} />;
     }
 
     const handleSend = async (content: string) => {
@@ -178,6 +179,13 @@ export default function Home() {
                             <span className="text-xs font-mono font-medium text-zinc-600 dark:text-zinc-300">
                                 {isDeckOpen ? "System Active" : (activeProcesses.length > 0 ? `${activeProcesses.length} Running` : "System Normal")}
                             </span>
+                        </button>
+                        <button
+                            onClick={() => setViewMode("AUTH")}
+                            className="p-1.5 text-zinc-500 hover:text-red-500 transition-colors"
+                            title="Logout"
+                        >
+                            <LogOut className="w-4 h-4" />
                         </button>
                     </div>
                 </header>
