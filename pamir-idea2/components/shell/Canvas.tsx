@@ -6,8 +6,10 @@ import { DeviceSimulator } from "./DeviceSimulator";
 import {
     Globe, Smartphone, Minimize2, TerminalSquare,
     Folder, FileJson, FileCode, FileText, ExternalLink, ChevronRight, ChevronDown,
-    Activity, Ban, RefreshCw
+    Activity, Ban, RefreshCw, Wifi, Bluetooth, Lock, Thermometer, Fan, Cpu, Zap, Power
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -122,6 +124,18 @@ export function Canvas({ mode, content, webUrl, isOpen, onClose, activeProcesses
         setActiveMode(mode);
     }, [mode]);
 
+    // System Settings State
+    const [wifi, setWifi] = React.useState(true);
+    const [bluetooth, setBluetooth] = React.useState(true);
+    const [ssh, setSsh] = React.useState(false);
+
+    const toggleWifi = () => {
+        setWifi(!wifi);
+        toast(wifi ? "WiFi Disabled" : "WiFi Enabled", {
+            icon: <Wifi className="w-4 h-4" />
+        });
+    };
+
     if (!isOpen) return null;
 
     const navItemClass = (itemMode: CanvasMode) => cn(
@@ -209,50 +223,125 @@ export function Canvas({ mode, content, webUrl, isOpen, onClose, activeProcesses
                 {activeMode === "system" && (
                     <div className="h-full flex flex-col bg-background">
                         <div className="px-4 py-3 border-b border-border/50">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-semibold">Active Processes</h3>
-                                <span className={cn("text-xs px-2 py-0.5 rounded-full border", activeProcesses.length > 0 ? "bg-green-500/10 text-green-600 border-green-200" : "bg-zinc-100 text-zinc-500 border-zinc-200")}>
-                                    {activeProcesses.length} Running
-                                </span>
-                            </div>
+                            <h3 className="text-sm font-semibold">System Monitor</h3>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {activeProcesses.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-48 text-zinc-400 border-2 border-dashed rounded-xl">
-                                    <TerminalSquare className="w-8 h-8 mb-2 opacity-50" />
-                                    <span className="text-sm">System Idle</span>
-                                </div>
-                            ) : (
-                                activeProcesses.map((proc) => (
-                                    <div key={proc.id} className="flex items-center justify-between p-3 rounded-lg bg-card border shadow-sm">
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn("w-2 h-2 rounded-full animate-pulse", proc.status === "running" ? "bg-green-500" : "bg-red-500")} />
-                                            <div>
-                                                <div className="font-mono text-sm font-medium">{proc.name}</div>
-                                                <div className="text-xs text-muted-foreground">CPU: {proc.cpu}% • ID: {proc.id}</div>
+                        <div className="flex-1 overflow-y-auto">
+                            {/* SETTINGS SECTION */}
+                            <div className="p-4 space-y-6 border-b border-border/50 bg-muted/10">
+                                {/* Connectivity */}
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                                        Connectivity
+                                    </h4>
+                                    <div className="space-y-3 pl-1">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn("p-1.5 rounded-md transition-colors", wifi ? "bg-blue-500/10 text-blue-600" : "bg-zinc-100 text-zinc-500")}>
+                                                    <Wifi className="w-4 h-4" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium">Wi-Fi</span>
+                                                    <span className="text-xs text-muted-foreground">{wifi ? "Pamir_Lab_5G" : "Disconnected"}</span>
+                                                </div>
                                             </div>
+                                            <Switch checked={wifi} onCheckedChange={toggleWifi} />
                                         </div>
-                                        <div className="flex gap-2">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-500">
-                                                <RefreshCw className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                                                onClick={() => onKillProcess && onKillProcess(proc.id)}
-                                            >
-                                                <Ban className="w-4 h-4" />
-                                            </Button>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn("p-1.5 rounded-md transition-colors", bluetooth ? "bg-indigo-500/10 text-indigo-600" : "bg-zinc-100 text-zinc-500")}>
+                                                    <Bluetooth className="w-4 h-4" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium">Bluetooth</span>
+                                                    <span className="text-xs text-muted-foreground">{bluetooth ? "Scanning..." : "Off"}</span>
+                                                </div>
+                                            </div>
+                                            <Switch checked={bluetooth} onCheckedChange={setBluetooth} />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn("p-1.5 rounded-md transition-colors", ssh ? "bg-amber-500/10 text-amber-600" : "bg-zinc-100 text-zinc-500")}>
+                                                    <Lock className="w-4 h-4" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium">SSH Access</span>
+                                                    <span className="text-xs text-muted-foreground">Port 22</span>
+                                                </div>
+                                            </div>
+                                            <Switch checked={ssh} onCheckedChange={setSsh} />
                                         </div>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                        <div className="p-4 border-t border-border/50 bg-muted/20">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-medium text-muted-foreground">Memory Usage</span>
-                                <span className="text-xs text-muted-foreground">1.2GB / 8GB</span>
+                                </div>
+
+                                {/* Hardware Stats */}
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                                        Hardware
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="p-3 rounded-xl border bg-card flex flex-col gap-1">
+                                            <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 mb-1">
+                                                <Thermometer className="w-3.5 h-3.5" />
+                                                <span className="text-[10px] font-semibold uppercase">Temp</span>
+                                            </div>
+                                            <span className="text-xl font-bold tracking-tight">42°C</span>
+                                        </div>
+                                        <div className="p-3 rounded-xl border bg-card flex flex-col gap-1">
+                                            <div className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 mb-1">
+                                                <Fan className="w-3.5 h-3.5" />
+                                                <span className="text-[10px] font-semibold uppercase">Fan</span>
+                                            </div>
+                                            <span className="text-xl font-bold tracking-tight">1.2k <span className="text-xs font-normal text-muted-foreground">RPM</span></span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <Progress value={15} className="h-2" />
+
+                            {/* PROCESS LIST SECTION */}
+                            <div className="p-4 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Processes</h4>
+                                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", activeProcesses.length > 0 ? "bg-green-500/10 text-green-600 border-green-200" : "bg-zinc-100 text-zinc-500 border-zinc-200")}>
+                                        {activeProcesses.length} Running
+                                    </span>
+                                </div>
+                                {activeProcesses.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-48 text-zinc-400 border-2 border-dashed rounded-xl">
+                                        <TerminalSquare className="w-8 h-8 mb-2 opacity-50" />
+                                        <span className="text-sm">System Idle</span>
+                                    </div>
+                                ) : (
+                                    activeProcesses.map((proc) => (
+                                        <div key={proc.id} className="flex items-center justify-between p-3 rounded-lg bg-card border shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn("w-2 h-2 rounded-full animate-pulse", proc.status === "running" ? "bg-green-500" : "bg-red-500")} />
+                                                <div>
+                                                    <div className="font-mono text-sm font-medium">{proc.name}</div>
+                                                    <div className="text-xs text-muted-foreground">CPU: {proc.cpu}% • ID: {proc.id}</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-500">
+                                                    <RefreshCw className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                                    onClick={() => onKillProcess && onKillProcess(proc.id)}
+                                                >
+                                                    <Ban className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                            <div className="p-4 border-t border-border/50 bg-muted/20">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-medium text-muted-foreground">Memory Usage</span>
+                                    <span className="text-xs text-muted-foreground">1.2GB / 8GB</span>
+                                </div>
+                                <Progress value={15} className="h-2" />
+                            </div>
                         </div>
                     </div>
                 )}
