@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
 import { EmptyState } from "@/components/shell/EmptyState";
+import { AuthPage } from "@/components/auth/AuthPage";
+import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { Canvas, CanvasMode } from "@/components/shell/Canvas";
 import { cn } from "@/lib/utils";
 
@@ -30,11 +32,16 @@ interface Process {
     cpu: number;
 }
 
+type ViewMode = "AUTH" | "ONBOARDING" | "SHELL";
+
 export default function Home() {
+    // App State
+    const [viewMode, setViewMode] = useState<ViewMode>("AUTH");
+
     const [messages, setMessages] = useState<Message[]>([]);
     const [isThinking, setIsThinking] = useState(false);
 
-    // Canvas/Deck State (Unified Right Pane)
+    // Canvas/Deck State
     const [isDeckOpen, setIsDeckOpen] = useState(false);
     const [deckMode, setDeckMode] = useState<CanvasMode>("device");
     const [canvasContent, setCanvasContent] = useState<React.ReactNode>(null);
@@ -44,6 +51,20 @@ export default function Home() {
 
     // Model State
     const [selectedModelId, setSelectedModelId] = useState("claude-3-5-sonnet");
+
+    // View Logic
+    if (viewMode === "AUTH") {
+        return (
+            <AuthPage
+                onLogin={() => setViewMode("SHELL")}
+                onSetup={() => setViewMode("ONBOARDING")}
+            />
+        );
+    }
+
+    if (viewMode === "ONBOARDING") {
+        return <OnboardingFlow onComplete={() => setViewMode("SHELL")} />;
+    }
 
     const handleSend = async (content: string) => {
         // Add User Message
